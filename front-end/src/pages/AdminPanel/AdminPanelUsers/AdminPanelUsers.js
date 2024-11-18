@@ -122,6 +122,8 @@ function AdminPanelUsers() {
 
   const [filterType, setFilterType] = useState("");
 
+  const [searchField, setSearchField] = useState("");
+
   const [searchPhrase, setSearchPhrase] = useState("");
 
   const [editedUserName, setEditedUserName] = useState(selectedUser.name);
@@ -326,7 +328,48 @@ function AdminPanelUsers() {
   // }
 
 
-  const getAllUsers = async (page , sortType , filterType , searchPhrase) => {
+  // const getAllUsers = async (page , sortType , filterType , searchPhrase) => {
+
+  //   try{
+  //     const loggedInUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+  //     const bodyItems = {
+  //       itemsPerPage: itemsPerPage,
+  //       sortType: sortType,
+  //       filterType: filterType,
+  //       searchPhrase: searchPhrase,
+  //     };
+  //     if(loggedInUser){
+  //       await fetch(`http://localhost:4000/users/get-all?page=${page}&sortType=${sortType}&filterType=${filterType}&searchPhrase=${searchPhrase}`, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": `Bearer ${loggedInUser.token}`,
+  //         },
+  //         body: JSON.stringify(bodyItems),
+  //       })
+  //         .then(res => {
+  //           if (!res.ok) throw new Error('Failed to fetch users!');
+  //           return res.json();
+  //         })
+  //         .then((res) => {
+  //           setUsers(res.data);
+  //           setSearchPhrase(res.searchPhrase);
+  //           setFilterType(res.selectedFilterType);
+  //           setSortType(res.selectedSortType);
+  //           setTotalPages(res.pagination.lastPage); // Set total pages from pagination response
+  //         })
+  //     }else{
+  //       return;
+  //     }
+      
+  //   }catch(error){
+  //     console.log(error);
+  //     return;
+  //   }
+  // }
+
+
+  const getAllUsers = async (page , sortType , filterType , searchField , searchPhrase) => {
 
     try{
       const loggedInUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
@@ -334,10 +377,11 @@ function AdminPanelUsers() {
         itemsPerPage: itemsPerPage,
         sortType: sortType,
         filterType: filterType,
+        searchField: searchField,
         searchPhrase: searchPhrase,
       };
       if(loggedInUser){
-        await fetch(`http://localhost:4000/users/get-all?page=${page}&sortType=${sortType}&filterType=${filterType}&searchPhrase=${searchPhrase}`, {
+        await fetch(`http://localhost:4000/users/get-all?page=${page}&sortType=${sortType}&filterType=${filterType}&searchField=${searchField}&searchPhrase=${searchPhrase}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -351,6 +395,7 @@ function AdminPanelUsers() {
           })
           .then((res) => {
             setUsers(res.data);
+            setSearchField(res.selectedSearchField);
             setSearchPhrase(res.searchPhrase);
             setFilterType(res.selectedFilterType);
             setSortType(res.selectedSortType);
@@ -469,7 +514,7 @@ function AdminPanelUsers() {
       .then(() => {
         setIsVisibleEditModal(false);
         // getAllUsers();
-        getAllUsers(currentPage , sortType , filterType , searchPhrase);
+        getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
       })
       .then(() => {
         swal({
@@ -525,7 +570,7 @@ function AdminPanelUsers() {
         // getAllUsers();
         setCurrentPage(1);
         // getAllUsers(1 , "" , "" , "");
-        getAllUsers(currentPage , sortType , filterType , searchPhrase);
+        getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
       })
       .then(() => {
         swal({
@@ -569,7 +614,7 @@ function AdminPanelUsers() {
       .then(() => {
         setIsVisibleChangeUserRoleModal(false);
         // getAllUsers();
-        getAllUsers(currentPage , sortType , filterType , searchPhrase);
+        getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
       })
       .then(() => {
         swal({
@@ -619,7 +664,7 @@ function AdminPanelUsers() {
       .then(() => {
         setIsVisibleChangeUserPasswordModal(false);
         // getAllUsers();
-        getAllUsers(currentPage , sortType , filterType , searchPhrase);
+        getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
       })
       .then(() => {
         swal({
@@ -678,7 +723,7 @@ function AdminPanelUsers() {
   
               // getAllUsers();
               // getAllUsers(1 , "" , "" , "");
-              getAllUsers(currentPage , sortType , filterType , searchPhrase);
+              getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
 
               swal({
                 title: "کاربر با موفقیت حذف شد",
@@ -718,7 +763,7 @@ function AdminPanelUsers() {
           if (!res.ok) throw new Error('Failed to ban user!');
           if (res.ok) {
             // getAllUsers();
-            getAllUsers(currentPage , sortType , filterType , searchPhrase);
+            getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
             swal({
               title: "کاربر با موفقیت بن شد",
               icon: "success",
@@ -755,7 +800,7 @@ function AdminPanelUsers() {
           if (!res.ok) throw new Error('Failed to unban user!');
           if (res.ok) {
             // getAllUsers();
-            getAllUsers(currentPage , sortType , filterType , searchPhrase);
+            getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
             swal({
               title: "کاربر با موفقیت از بن خارج شد",
               icon: "success",
@@ -798,14 +843,14 @@ function AdminPanelUsers() {
 
 
   useEffect(() => {
-    getAllUsers(currentPage , sortType , filterType , searchPhrase);
+    getAllUsers(currentPage , sortType , filterType , searchField , searchPhrase);
   }, [currentPage]); // Fetch users when currentPage changes
 
 
   useEffect(() => {
     setCurrentPage(1);
-    getAllUsers(1 , sortType , filterType , searchPhrase);
-  }, [itemsPerPage , sortType , filterType , searchPhrase]); // Fetch users when itemsPerPage or sortType or searchPhrase changes
+    getAllUsers(1 , sortType , filterType , searchField , searchPhrase);
+  }, [itemsPerPage , sortType , filterType , searchField , searchPhrase]); // Fetch users when itemsPerPage or sortType or searchField or searchPhrase changes
 
 
   useEffect(() => {
@@ -883,9 +928,18 @@ function AdminPanelUsers() {
         </div>
 
         <div className="items-per-page">
-          <label>جستجو : </label>
-          <input className="items-per-page-select" defaultValue={searchPhrase} onChange={(e) => setSearchPhrase(e.target.value)} />
+          <label>جستجو در فیلد : </label>
+          <select className="items-per-page-select" defaultValue={searchField} onChange={(e) => setSearchField(e.target.value)}>
+            <option value="">انتخاب کنید</option>
+            <option value="name">نام</option>
+            <option value="username">نام کاربری</option>
+            <option value="email">ایمیل</option>
+            <option value="all">نام و نام کاربری و ایمیل</option>
+          </select>
+          <label>بر اساس کلمه کلیدی : </label>
+          <input className="items-per-page-select" placeholder="تایپ کنید ..." defaultValue={searchPhrase} onChange={(e) => setSearchPhrase(e.target.value)} />
         </div>
+
       </div>
 
       {

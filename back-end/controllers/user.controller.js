@@ -262,7 +262,7 @@ exports.getAllUsersByAdmin = async (req, res, next) => {
 
     const page = Number(req.query.page) || 1;
 
-    const {itemsPerPage , sortType , filterType , searchPhrase} = req.body;
+    const {itemsPerPage , sortType , filterType , searchField , searchPhrase} = req.body;
 
     const selectedFilterType = 
       filterType === "role-admin" ? {role: "ADMIN"} :
@@ -271,10 +271,24 @@ exports.getAllUsersByAdmin = async (req, res, next) => {
       filterType === "notIsBan" ? {isBan: false} :
       {};
 
+    const selectedSearchField = 
+      searchField === "name" && searchPhrase ? { name: { $regex: searchPhrase , $options: "i" } } :
+      searchField === "username" && searchPhrase ? { username: { $regex: searchPhrase , $options: "i" } } :
+      searchField === "email" && searchPhrase ? { email: { $regex: searchPhrase , $options: "i" } } :
+      searchField === "all" && searchPhrase ? {
+          $or: [
+              { name: { $regex: searchPhrase ? searchPhrase : "", $options: "i" } },
+              { username: { $regex: searchPhrase ? searchPhrase : "", $options: "i" } },
+              { email: { $regex: searchPhrase ? searchPhrase : "", $options: "i" } }
+          ]
+        } :
+      {};
+
     // const numberOfItems = await userModel.find().countDocuments();
     // const numberOfItems = await userModel.find(selectedFilterType).countDocuments();
     const numberOfItems = await userModel
-      .find({ username: { $regex: searchPhrase ? searchPhrase : "" , $options: "i" } })    // 'i' for case-insensitive search , 's' for case-sensitive search
+      // .find({ username: { $regex: searchPhrase ? searchPhrase : "" , $options: "i" } })    // 'i' for case-insensitive search , 's' for case-sensitive search
+      .find(selectedSearchField)
       .find(selectedFilterType)
       .countDocuments();
 
@@ -293,7 +307,8 @@ exports.getAllUsersByAdmin = async (req, res, next) => {
 
     const users = await userModel
       // .find()
-      .find({ username: { $regex: searchPhrase ? searchPhrase : "" , $options: "i" } })    // 'i' for case-insensitive search , 's' for case-sensitive search
+      // .find({ username: { $regex: searchPhrase ? searchPhrase : "" , $options: "i" } })    // 'i' for case-insensitive search , 's' for case-sensitive search
+      .find(selectedSearchField)
       .find(selectedFilterType)
       .sort(selectedSortType)
       .skip((page-1)*itemsPerPage)
@@ -313,7 +328,7 @@ exports.getAllUsersByAdmin = async (req, res, next) => {
       return res.status(404).json("user not found !");
     }
 
-    return res.status(200).json({status: 200, message: "users get successfully !", data: users, pagination: pagination, selectedSortType: sortType, selectedFilterType: filterType, searchPhrase: searchPhrase});
+    return res.status(200).json({status: 200, message: "users get successfully !", data: users, pagination: pagination, selectedSortType: sortType, selectedFilterType: filterType, selectedSearchField: searchField, searchPhrase: searchPhrase});
     
   }catch(error){
     next(error);
